@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>食品衛生クイズ / Food Hygiene Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --card: #111827;
+    --card2: #1a2235;
+    --accent: #00d4aa;
+    --accent2: #ff6b35;
+    --danger: #ff3d5a;
+    --gold: #ffd700;
+    --text: #f0f4ff;
+    --sub: #8892a4;
+    --border: #1f2d42;
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', 'Noto Sans JP', sans-serif; }
+
+  /* ── SCREEN SYSTEM ── */
+  .screen { display: none; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; }
+  .screen.active { display: flex; }
+
+  /* ── BG DECO ── */
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,212,170,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 90% 100%, rgba(255,107,53,0.08) 0%, transparent 60%);
+  }
+  .screen > * { position: relative; z-index: 1; }
+
+  /* ── LANG SCREEN ── */
+  .lang-title { font-size: clamp(1.5rem, 6vw, 2.2rem); font-weight: 900; text-align: center; line-height: 1.3; margin-bottom: 8px; }
+  .lang-sub { color: var(--sub); font-size: 0.9rem; text-align: center; margin-bottom: 40px; }
+  .lang-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .lang-btn {
+    flex: 1; min-width: 140px; max-width: 200px;
+    padding: 20px 24px; border-radius: var(--radius); border: 2px solid var(--border);
+    background: var(--card); cursor: pointer; transition: all .2s;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: inherit;
+  }
+  .lang-btn:hover, .lang-btn:focus { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,212,170,0.2); }
+  .lang-btn .flag { font-size: 2.5rem; }
+  .lang-btn .lname { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .lang-btn .lsub { font-size: 0.75rem; color: var(--sub); }
+
+  /* ── NAME SCREEN ── */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 24px; width: 100%; max-width: 420px; box-shadow: var(--shadow); }
+  .card-title { font-size: 1.3rem; font-weight: 900; margin-bottom: 6px; }
+  .card-sub { color: var(--sub); font-size: 0.85rem; margin-bottom: 24px; line-height: 1.5; }
+  .field-label { font-size: 0.8rem; color: var(--sub); margin-bottom: 8px; letter-spacing: .05em; text-transform: uppercase; }
+  .field-input {
+    width: 100%; padding: 14px 16px; background: var(--card2); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 1rem; font-family: inherit;
+    transition: border-color .2s; outline: none;
+  }
+  .field-input:focus { border-color: var(--accent); }
+  .btn-primary {
+    margin-top: 20px; width: 100%; padding: 16px; background: var(--accent);
+    color: #0a0f1a; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px;
+    cursor: pointer; transition: all .2s; font-family: inherit; letter-spacing: .02em;
+  }
+  .btn-primary:hover { opacity: .88; transform: translateY(-2px); }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .rules-box { background: var(--card2); border-radius: 10px; padding: 16px; margin-top: 20px; }
+  .rules-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.82rem; color: var(--sub); line-height: 1.5; }
+  .rules-item + .rules-item { margin-top: 8px; }
+  .rules-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── QUIZ SCREEN ── */
+  .quiz-header { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 540px; margin-bottom: 16px; }
+  .q-num { font-size: 0.8rem; color: var(--sub); }
+  .q-num span { color: var(--accent); font-weight: 700; font-size: 1rem; }
+  .hearts { display: flex; gap: 4px; font-size: 1.3rem; }
+  .streak-bar { width: 100%; max-width: 540px; height: 6px; background: var(--card2); border-radius: 99px; margin-bottom: 20px; overflow: hidden; }
+  .streak-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #00ffcc); border-radius: 99px; transition: width .4s ease; }
+  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 22px; width: 100%; max-width: 540px; margin-bottom: 16px; }
+  .q-category { font-size: 0.72rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+  .q-text { font-size: clamp(1rem, 4vw, 1.15rem); font-weight: 700; line-height: 1.6; }
+  .q-text-sub { font-size: 0.82rem; color: var(--sub); margin-top: 6px; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 540px; }
+  .opt-btn {
+    padding: 15px 18px; background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 12px; color: var(--text); font-size: clamp(0.88rem, 3.5vw, 0.97rem);
+    font-family: inherit; cursor: pointer; text-align: left; transition: all .18s;
+    line-height: 1.5;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,212,170,0.07); }
+  .opt-btn.correct { border-color: var(--accent); background: rgba(0,212,170,0.15); color: var(--accent); font-weight: 700; }
+  .opt-btn.wrong { border-color: var(--danger); background: rgba(255,61,90,0.12); color: var(--danger); font-weight: 700; }
+  .opt-btn:disabled { cursor: default; }
+  .feedback-box { width: 100%; max-width: 540px; background: var(--card2); border-radius: 12px; padding: 16px 18px; margin-top: 4px; animation: fadeUp .3s ease; }
+  .feedback-box.fb-correct { border-left: 4px solid var(--accent); }
+  .feedback-box.fb-wrong { border-left: 4px solid var(--danger); }
+  .fb-label { font-size: 0.78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+  .fb-label.ok { color: var(--accent); }
+  .fb-label.ng { color: var(--danger); }
+  .fb-text { font-size: 0.85rem; color: var(--sub); line-height: 1.6; }
+  .btn-next { margin-top: 12px; }
+
+  /* ── RESULT / CLEAR SCREEN ── */
+  .result-icon { font-size: 4rem; margin-bottom: 16px; animation: pop .5s cubic-bezier(.34,1.56,.64,1); }
+  .result-title { font-size: clamp(1.6rem, 7vw, 2.4rem); font-weight: 900; text-align: center; margin-bottom: 8px; }
+  .result-sub { color: var(--sub); text-align: center; font-size: 0.9rem; line-height: 1.6; margin-bottom: 28px; max-width: 360px; }
+  .result-title.clear { background: linear-gradient(135deg, var(--accent), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .result-title.fail { color: var(--danger); }
+  .result-stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; text-align: center; margin-bottom: 24px; min-width: 200px; }
+  .result-stat .num { font-size: 2.5rem; font-weight: 900; color: var(--accent); }
+  .result-stat .label { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
+  .btn-secondary {
+    padding: 14px 32px; background: transparent; border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 0.95rem; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: all .2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ── HALL OF FAME ── */
+  #screen-hof { padding: 24px 16px 40px; }
+  .hof-header { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 540px; margin-bottom: 24px; }
+  .hof-title { font-size: 1.4rem; font-weight: 900; }
+  .hof-sub { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
+  .hof-empty { color: var(--sub); font-size: 0.9rem; text-align: center; padding: 40px 0; }
+  .hof-list { width: 100%; max-width: 540px; display: flex; flex-direction: column; gap: 10px; }
+  .hof-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+    animation: fadeUp .3s ease both;
+  }
+  .hof-item:nth-child(1) { border-color: var(--gold); }
+  .hof-rank { font-size: 1.1rem; font-weight: 900; min-width: 28px; text-align: center; }
+  .hof-rank.r1 { color: var(--gold); }
+  .hof-rank.r2 { color: #c0c0c0; }
+  .hof-rank.r3 { color: #cd7f32; }
+  .hof-name { flex: 1; font-weight: 700; font-size: 0.95rem; }
+  .hof-date { font-size: 0.72rem; color: var(--sub); }
+  .hof-badge { font-size: 0.68rem; background: linear-gradient(135deg, var(--accent), #00ffcc); color: #0a0f1a; border-radius: 99px; padding: 2px 10px; font-weight: 700; letter-spacing: .05em; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+  @keyframes pop { from { transform: scale(0.4); opacity:0; } to { transform: scale(1); opacity:1; } }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+  .shake { animation: shake .4s ease; }
+
+  /* ── CONFETTI ── */
+  .confetti-wrap { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 999; }
+  .confetti-piece { position: absolute; width: 10px; height: 10px; opacity: 0; animation: confettiFall linear forwards; border-radius: 2px; }
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── SWITCH LANG BTN ── */
+  .lang-switch { position: fixed; top: 14px; right: 14px; z-index: 100; background: var(--card); border: 1px solid var(--border); border-radius: 99px; padding: 6px 14px; font-size: 0.78rem; cursor: pointer; color: var(--sub); font-family: inherit; transition: all .2s; }
+  .lang-switch:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── HOF BTN ON RESULT ── */
+  .hof-btn-wrap { margin-top: 16px; }
+
+  .err-msg { color: var(--danger); font-size: 0.8rem; margin-top: 8px; min-height: 18px; }
+</style>
+</head>
+<body>
+
+<!-- Lang switch button (visible after lang selected) -->
+<button class="lang-switch" id="langSwitch" style="display:none" onclick="switchLang()">🌐 EN / JP</button>
+
+<!-- ── SCREEN: LANGUAGE SELECT ── -->
+<div class="screen active" id="screen-lang">
+  <div style="text-align:center; margin-bottom:32px;">
+    <div style="font-size:2.2rem; margin-bottom:8px;">🍱</div>
+    <div class="lang-title">食品衛生クイズ<br><span style="font-size:0.6em; font-weight:400; color:var(--sub)">Food Hygiene Quiz</span></div>
+    <div class="lang-sub">言語を選んでください / Choose your language</div>
+  </div>
+  <div class="lang-btns">
+    <button class="lang-btn" onclick="setLang('ja')">
+      <span class="flag">🇯🇵</span>
+      <span class="lname">日本語</span>
+      <span class="lsub">Japanese</span>
+    </button>
+    <button class="lang-btn" onclick="setLang('en')">
+      <span class="flag">🇺🇸</span>
+      <span class="lname">English</span>
+      <span class="lsub">英語</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── SCREEN: NAME ENTRY ── -->
+<div class="screen" id="screen-name">
+  <div class="card">
+    <div class="card-title" id="nameTitle">お名前を入力してください</div>
+    <div class="card-sub" id="nameSub">クイズを始める前に氏名を入力してください。<br>10問全問正解で達成者として登録されます。</div>
+    <div class="field-label" id="nameLabel">氏名</div>
+    <input class="field-input" type="text" id="nameInput" maxlength="20" autocomplete="off" placeholder="例: 山田 太郎">
+    <div class="err-msg" id="nameErr"></div>
+    <div class="rules-box" id="rulesBox">
+      <div class="rules-item"><span class="rules-icon">✅</span><span id="rule1">10問連続正解でクリア！</span></div>
+      <div class="rules-item"><span class="rules-icon">❌</span><span id="rule2">1問でも間違えたらゲームオーバー</span></div>
+      <div class="rules-item"><span class="rules-icon">🏆</span><span id="rule3">全問正解者は達成者として表示されます</span></div>
+      <div class="rules-item"><span class="rules-icon">🔀</span><span id="rule4">問題は毎回ランダムに出題されます</span></div>
+    </div>
+    <button class="btn-primary" id="startBtn" onclick="startQuiz()" disabled>
+      <span id="startBtnTxt">スタート！</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── SCREEN: QUIZ ── -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-header">
+    <div class="q-num"><span id="qNum">1</span> / 10</div>
+    <div class="hearts" id="heartsDisplay">❤️</div>
+  </div>
+  <div class="streak-bar"><div class="streak-fill" id="streakFill" style="width:0%"></div></div>
+  <div class="q-card">
+    <div class="q-category" id="qCategory"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-text-sub" id="qTextSub"></div>
+  </div>
+  <div class="options" id="optionsWrap"></div>
+  <div class="feedback-box" id="feedbackBox" style="display:none">
+    <div class="fb-label" id="fbLabel"></div>
+    <div class="fb-text" id="fbText"></div>
+    <button class="btn-primary btn-next" id="nextBtn" onclick="nextQuestion()"><span id="nextBtnTxt">次の問題へ</span></button>
+  </div>
+</div>
+
+<!-- ── SCREEN: CLEAR ── -->
+<div class="screen" id="screen-clear">
+  <div class="confetti-wrap" id="confettiWrap"></div>
+  <div class="result-icon">🏆</div>
+  <div class="result-title clear" id="clearTitle">クリア達成！</div>
+  <div class="result-sub" id="clearSub">おめでとうございます！10問全問正解しました。</div>
+  <div class="result-stat">
+    <div class="num">10<span style="font-size:1.2rem">/10</span></div>
+    <div class="label" id="clearStatLabel">正解数</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goHof()"><span id="hofBtnTxt">🏅 達成者一覧</span></button>
+    <button class="btn-primary" style="max-width:180px" onclick="restartQuiz()"><span id="clearRetryTxt">もう一度挑戦</span></button>
+  </div>
+</div>
+
+<!-- ── SCREEN: GAME OVER ── -->
+<div class="screen" id="screen-gameover">
+  <div class="result-icon">😢</div>
+  <div class="result-title fail" id="overTitle">ゲームオーバー</div>
+  <div class="result-sub" id="overSub"></div>
+  <div class="result-stat">
+    <div class="num" id="overNum">0</div>
+    <div class="label" id="overLabel">連続正解数</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goHof()"><span id="hofBtnTxt2">🏅 達成者一覧</span></button>
+    <button class="btn-primary" style="max-width:180px" onclick="restartQuiz()"><span id="overRetryTxt">もう一度挑戦</span></button>
+  </div>
+</div>
+
+<!-- ── SCREEN: HALL OF FAME ── -->
+<div class="screen" id="screen-hof" style="justify-content:flex-start; padding-top:40px">
+  <div class="hof-header">
+    <div>
+      <div class="hof-title" id="hofTitle">🏅 達成者一覧</div>
+      <div class="hof-sub" id="hofSubtitle">10問全問正解した方々</div>
+    </div>
+    <button class="btn-secondary" onclick="backFromHof()" style="padding:10px 18px; font-size:0.85rem"><span id="backBtnTxt">← 戻る</span></button>
+  </div>
+  <div class="hof-list" id="hofList"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  QUESTION BANK  — 40 questions, JP + EN bilingual
+// ═══════════════════════════════════════════════════════
+const QUESTION_BANK = [
+  {
+    cat_ja:"温度管理", cat_en:"Temperature",
+    ja:"食品の冷蔵保存に適した温度は何℃以下ですか？",
+    en:"What is the maximum safe temperature for refrigerated food storage?",
+    opts_ja:["0℃以下","5℃以下","10℃以下","15℃以下"],
+    opts_en:["Below 0°C","Below 5°C","Below 10°C","Below 15°C"],
+    ans:1,
+    exp_ja:"冷蔵保存は5℃以下が基本です。細菌の増殖を抑えるため、冷蔵庫は常に5℃以下に保ちましょう。",
+    exp_en:"Refrigerated storage should be kept at or below 5°C to inhibit bacterial growth."
+  },
+  {
+    cat_ja:"温度管理", cat_en:"Temperature",
+    ja:"加熱調理した食品の中心温度は何℃以上でなければなりませんか？",
+    en:"What minimum internal temperature must cooked food reach to be considered safe?",
+    opts_ja:["65℃以上","70℃以上","75℃以上","80℃以上"],
+    opts_en:["Above 65°C","Above 70°C","Above 75°C","Above 80°C"],
+    ans:2,
+    exp_ja:"食品安全基本原則として、加熱調理品の中心温度は75℃以上（1分間以上）が必要です。",
+    exp_en:"Food safety standards require the center of cooked food to reach 75°C (167°F) for at least 1 minute."
+  },
+  {
+    cat_ja:"温度管理", cat_en:"Temperature",
+    ja:"食品の「危険温度帯」（細菌が最も増殖しやすい温度範囲）はどれですか？",
+    en:"Which temperature range is considered the 'danger zone' for bacterial growth in food?",
+    opts_ja:["0℃〜10℃","5℃〜60℃","20℃〜40℃","30℃〜55℃"],
+    opts_en:["0°C–10°C","5°C–60°C","20°C–40°C","30°C–55°C"],
+    ans:1,
+    exp_ja:"5℃〜60℃は細菌が急速に増殖する「危険温度帯」です。この温度帯に食品を長時間置かないようにしましょう。",
+    exp_en:"5°C to 60°C is the 'danger zone' where bacteria multiply rapidly. Never leave food in this range for extended periods."
+  },
+  {
+    cat_ja:"温度管理", cat_en:"Temperature",
+    ja:"冷凍食品は何℃以下で保存する必要がありますか？",
+    en:"At what temperature or below should frozen food be stored?",
+    opts_ja:["-10℃以下","-15℃以下","-18℃以下","-25℃以下"],
+    opts_en:["Below -10°C","Below -15°C","Below -18°C","Below -25°C"],
+    ans:2,
+    exp_ja:"冷凍食品は-18℃以下での保存が必要です。-18℃以下では細菌はほぼ活動できません。",
+    exp_en:"Frozen food must be stored at -18°C or below. Bacteria are largely inactive at this temperature."
+  },
+  {
+    cat_ja:"手洗い", cat_en:"Handwashing",
+    ja:"食品を取り扱う前の手洗い。最低何秒以上、石けんで洗うべきですか？",
+    en:"Before handling food, how many seconds minimum should you wash hands with soap?",
+    opts_ja:["10秒以上","20秒以上","30秒以上","60秒以上"],
+    opts_en:["At least 10 seconds","At least 20 seconds","At least 30 seconds","At least 60 seconds"],
+    ans:1,
+    exp_ja:"手洗いは石けんを使い、指の間・爪・手首も含め20秒以上が推奨されています。",
+    exp_en:"Handwashing with soap for at least 20 seconds, covering fingers, nails, and wrists, is recommended."
+  },
+  {
+    cat_ja:"手洗い", cat_en:"Handwashing",
+    ja:"次のうち、必ず手洗いが必要な場面はどれですか？",
+    en:"In which of the following situations is handwashing mandatory?",
+    opts_ja:["昼食後","トイレ使用後","休憩開始前","業務終了後"],
+    opts_en:["After lunch","After using the toilet","Before taking a break","After finishing work"],
+    ans:1,
+    exp_ja:"トイレ使用後は必ず手を洗いましょう。腸管出血性大腸菌などの食中毒菌が付着している可能性があります。",
+    exp_en:"Always wash hands after using the toilet. Dangerous pathogens like E. coli may be present."
+  },
+  {
+    cat_ja:"手洗い", cat_en:"Handwashing",
+    ja:"手洗い後の乾燥方法として最も衛生的なものはどれですか？",
+    en:"What is the most hygienic way to dry hands after washing?",
+    opts_ja:["作業着で拭く","共用タオルで拭く","使い捨てペーパータオル","自然乾燥"],
+    opts_en:["Wipe on work clothes","Use a shared towel","Use disposable paper towels","Air dry"],
+    ans:2,
+    exp_ja:"使い捨てペーパータオルが最も衛生的です。共用タオルは交差汚染の原因になります。",
+    exp_en:"Disposable paper towels are most hygienic. Shared towels can cause cross-contamination."
+  },
+  {
+    cat_ja:"交差汚染", cat_en:"Cross-contamination",
+    ja:"生の鶏肉を切ったまな板をそのまま野菜に使用すると何が起こる危険がありますか？",
+    en:"What risk occurs when using a cutting board with raw chicken residue directly for vegetables?",
+    opts_ja:["野菜の変色","交差汚染（食中毒の原因）","においの移り","栄養価の低下"],
+    opts_en:["Vegetable discoloration","Cross-contamination (food poisoning risk)","Odor transfer","Loss of nutritional value"],
+    ans:1,
+    exp_ja:"生の鶏肉にはカンピロバクターなどが含まれる場合があります。交差汚染を防ぐため、まな板・包丁は用途別に使い分けましょう。",
+    exp_en:"Raw chicken may contain Campylobacter. Use separate cutting boards and knives for raw meat and vegetables to prevent cross-contamination."
+  },
+  {
+    cat_ja:"交差汚染", cat_en:"Cross-contamination",
+    ja:"食材の保管で正しいのはどれですか？",
+    en:"Which is the correct way to store food items in a refrigerator?",
+    opts_ja:["生肉を一番上の棚に保存する","生肉・魚を野菜の下に保存する","加工食品の上に生肉を置く","生肉・魚を密閉容器で最下段に保存する"],
+    opts_en:["Store raw meat on the top shelf","Store raw meat/fish below vegetables","Place raw meat on top of processed food","Store raw meat/fish in sealed containers on the bottom shelf"],
+    ans:3,
+    exp_ja:"生肉・魚は密閉容器に入れ、最下段に保管します。こうすることで滴り汁による汚染を防げます。",
+    exp_en:"Raw meat and fish should be in sealed containers on the bottom shelf to prevent drip contamination onto other foods."
+  },
+  {
+    cat_ja:"交差汚染", cat_en:"Cross-contamination",
+    ja:"アレルゲンを含む食品を調理した後、同じ器具を使って別の料理を調理する際に何が起こる可能性がありますか？",
+    en:"What can happen when cooking another dish with utensils used on allergen-containing food?",
+    opts_ja:["味が変わる","アレルゲンの交差接触","調理時間が延びる","食感が変わる"],
+    opts_en:["Flavor changes","Allergen cross-contact","Longer cooking time","Texture changes"],
+    ans:1,
+    exp_ja:"アレルゲンは微量でも重篤な症状を引き起こす可能性があります。アレルゲンを含む食品の調理器具は必ず洗浄・消毒してください。",
+    exp_en:"Even trace amounts of allergens can cause severe reactions. Always thoroughly clean and sanitize utensils after contact with allergen-containing foods."
+  },
+  {
+    cat_ja:"個人衛生", cat_en:"Personal Hygiene",
+    ja:"食品製造現場での作業中、傷口はどのように扱うべきですか？",
+    en:"How should wounds be treated during food manufacturing work?",
+    opts_ja:["そのまま作業を続ける","傷口に絆創膏を貼り作業を続ける","防水の絆創膏を貼り手袋を着用する","傷がない方の手だけで作業する"],
+    opts_en:["Continue work without treatment","Apply a regular bandage and continue","Apply waterproof bandage and wear gloves","Only use the hand without the wound"],
+    ans:2,
+    exp_ja:"傷口の細菌が食品に混入しないよう、防水絆創膏＋手袋の二重対策が必要です。目立つ色（青など）の絆創膏を使うとさらに安全です。",
+    exp_en:"Use waterproof bandages plus gloves to prevent wound bacteria from contaminating food. Brightly colored (e.g., blue) bandages are recommended for easy detection."
+  },
+  {
+    cat_ja:"個人衛生", cat_en:"Personal Hygiene",
+    ja:"食品を取り扱う際、装飾用のアクセサリー（指輪・時計など）はどうすべきですか？",
+    en:"What should be done with decorative accessories (rings, watches, etc.) when handling food?",
+    opts_ja:["着用したまま作業してよい","手袋をしていれば問題ない","外してから作業する","素材が金属であれば問題ない"],
+    opts_en:["Can be worn during work","Fine if wearing gloves","Must be removed before work","OK if made of metal"],
+    ans:2,
+    exp_ja:"アクセサリーには細菌が付着しやすく、異物混入の原因にもなります。食品取り扱い前は必ず外しましょう。",
+    exp_en:"Accessories can harbor bacteria and cause foreign object contamination. Always remove them before handling food."
+  },
+  {
+    cat_ja:"個人衛生", cat_en:"Personal Hygiene",
+    ja:"作業員が下痢・嘔吐の症状がある場合、どうすべきですか？",
+    en:"What should a worker do if they experience diarrhea or vomiting?",
+    opts_ja:["マスクを着用して作業を続ける","症状を報告し、食品取り扱い業務を外れる","症状が軽ければ通常通り作業してよい","手洗いを徹底すれば問題ない"],
+    opts_en:["Wear a mask and continue working","Report symptoms and be removed from food handling","Light symptoms are OK to continue","Thorough handwashing makes it safe to continue"],
+    ans:1,
+    exp_ja:"下痢・嘔吐はノロウイルスなどの感染性胃腸炎のサインである可能性があります。直ちに上司に報告し、食品取り扱い業務を離れてください。",
+    exp_en:"Diarrhea/vomiting may indicate norovirus or other infectious illness. Report to a supervisor immediately and stop all food handling duties."
+  },
+  {
+    cat_ja:"個人衛生", cat_en:"Personal Hygiene",
+    ja:"食品製造現場での作業時に正しい服装はどれですか？",
+    en:"Which is the correct attire for working in a food manufacturing environment?",
+    opts_ja:["私服のまま作業する","帽子を着用し、毛髪が落ちないようにする","短髪であれば帽子は不要","マスクのみ着用すればよい"],
+    opts_en:["Work in regular clothes","Wear a cap to prevent hair from falling","Short hair means no cap needed","Just wearing a mask is sufficient"],
+    ans:1,
+    exp_ja:"毛髪は重要な異物混入源です。帽子・ネットを着用し、毛髪が完全に覆われているか確認してください。",
+    exp_en:"Hair is a major source of foreign object contamination. Always wear a cap/hairnet and ensure all hair is completely covered."
+  },
+  {
+    cat_ja:"消毒・洗浄", cat_en:"Cleaning & Sanitation",
+    ja:"食品に触れる器具の消毒に使用する次亜塩素酸ナトリウム（塩素系漂白剤）の一般的な有効濃度はどれですか？",
+    en:"What is the standard effective concentration of sodium hypochlorite (bleach) for sanitizing food-contact surfaces?",
+    opts_ja:["10〜20 ppm","50〜100 ppm","200〜300 ppm","500〜1000 ppm"],
+    opts_en:["10–20 ppm","50–100 ppm","200–300 ppm","500–1000 ppm"],
+    ans:1,
+    exp_ja:"食品に触れる器具の消毒には50〜100 ppmの次亜塩素酸ナトリウム溶液が一般的に使用されます。",
+    exp_en:"A 50–100 ppm sodium hypochlorite solution is commonly used for sanitizing food-contact surfaces and utensils."
+  },
+  {
+    cat_ja:"消毒・洗浄", cat_en:"Cleaning & Sanitation",
+    ja:"洗浄と消毒の正しい順序はどれですか？",
+    en:"What is the correct order for cleaning and sanitizing?",
+    opts_ja:["消毒→洗浄","洗浄→消毒","消毒のみでよい","洗浄のみでよい"],
+    opts_en:["Sanitize → Clean","Clean → Sanitize","Sanitizing only is sufficient","Cleaning only is sufficient"],
+    ans:1,
+    exp_ja:"まず洗浄で汚れを落とし、その後消毒を行います。汚れが残っていると消毒効果が低下します。",
+    exp_en:"Always clean first to remove dirt, then sanitize. Sanitizers are less effective when visible soiling is present."
+  },
+  {
+    cat_ja:"消毒・洗浄", cat_en:"Cleaning & Sanitation",
+    ja:"食品製造設備の洗浄不足が原因で発生しうるリスクはどれですか？",
+    en:"What risk can result from inadequate cleaning of food processing equipment?",
+    opts_ja:["電力消費の増加","バイオフィルムの形成による細菌汚染","製品の重量変化","設備の騒音増加"],
+    opts_en:["Increased power consumption","Bacterial contamination via biofilm formation","Product weight changes","Increased equipment noise"],
+    ans:1,
+    exp_ja:"洗浄不足の設備ではバイオフィルム（細菌の集合体）が形成され、継続的な食品汚染の原因となります。",
+    exp_en:"Improperly cleaned equipment can form biofilms (bacterial colonies), causing ongoing food contamination."
+  },
+  {
+    cat_ja:"食中毒", cat_en:"Food Poisoning",
+    ja:"ノロウイルスによる食中毒の主な感染経路はどれですか？",
+    en:"What is the main route of norovirus food poisoning transmission?",
+    opts_ja:["空気感染","糞口感染（汚染された手・食品・水）","血液感染","動物からの直接感染"],
+    opts_en:["Airborne transmission","Fecal-oral route (contaminated hands/food/water)","Blood-borne transmission","Direct animal-to-human transmission"],
+    ans:1,
+    exp_ja:"ノロウイルスは糞口感染が主な経路です。手洗いの徹底と食品の十分な加熱が予防の基本です。",
+    exp_en:"Norovirus primarily spreads via the fecal-oral route. Thorough handwashing and adequate heating of food are key preventive measures."
+  },
+  {
+    cat_ja:"食中毒", cat_en:"Food Poisoning",
+    ja:"サルモネラ菌による食中毒を防ぐために最も重要な対策はどれですか？",
+    en:"What is the most important measure to prevent Salmonella food poisoning?",
+    opts_ja:["食品を十分に冷やすこと","食品を十分に加熱すること（75℃以上）","食品を冷凍すること","食品を酢で漬けること"],
+    opts_en:["Chilling food sufficiently","Heating food thoroughly (above 75°C)","Freezing food","Marinating food in vinegar"],
+    ans:1,
+    exp_ja:"サルモネラ菌は75℃以上の加熱で死滅します。鶏肉・卵などの動物性食品は十分に加熱してから喫食してください。",
+    exp_en:"Salmonella is killed at 75°C or above. Always thoroughly cook poultry, eggs, and other animal products."
+  },
+  {
+    cat_ja:"食中毒", cat_en:"Food Poisoning",
+    ja:"黄色ブドウ球菌（スタフィロコッカス・アウレウス）が産生する毒素の特徴はどれですか？",
+    en:"What is a key characteristic of the toxin produced by Staphylococcus aureus?",
+    opts_ja:["加熱すると分解される","冷凍すると分解される","加熱しても分解されない（耐熱性）","紫外線で分解される"],
+    opts_en:["Destroyed by heating","Destroyed by freezing","Heat-resistant (not destroyed by cooking)","Destroyed by UV light"],
+    ans:2,
+    exp_ja:"黄色ブドウ球菌のエンテロトキシンは耐熱性があり、一度産生されると通常の加熱調理では分解されません。菌の増殖を防ぐ温度管理が重要です。",
+    exp_en:"Staphylococcus aureus enterotoxin is heat-stable and cannot be destroyed by normal cooking once produced. Temperature control to prevent bacterial growth is essential."
+  },
+  {
+    cat_ja:"食中毒", cat_en:"Food Poisoning",
+    ja:"腸管出血性大腸菌（O157など）の食中毒を防ぐために特に重要なことはどれですか？",
+    en:"What is especially important for preventing enterohemorrhagic E. coli (e.g., O157) food poisoning?",
+    opts_ja:["食品を冷蔵保管する","トイレ後の手洗い徹底と食肉の十分な加熱","食品を乾燥状態に保つ","食品添加物を使用しない"],
+    opts_en:["Keep food refrigerated","Thorough handwashing after toilet use and fully cooking meat","Keep food dry","Avoid food additives"],
+    ans:1,
+    exp_ja:"O157などの腸管出血性大腸菌は少量でも感染し、溶血性尿毒症症候群（HUS）などの重篤な疾患を引き起こします。手洗いと十分な加熱が必須です。",
+    exp_en:"E. coli O157 can cause severe illness including HUS even in small doses. Handwashing after toilet use and thorough cooking of meat are essential."
+  },
+  {
+    cat_ja:"食中毒", cat_en:"Food Poisoning",
+    ja:"ボツリヌス菌の特徴として正しいのはどれですか？",
+    en:"Which statement correctly describes Clostridium botulinum?",
+    opts_ja:["酸素がある環境で増殖する","真空パック・缶詰など嫌気性環境で増殖し強力な神経毒素を産生する","一般的な冷蔵温度（5℃以下）で増殖する","加熱調理で完全に不活性化できる"],
+    opts_en:["Grows in oxygen-rich environments","Grows in anaerobic conditions (vacuum packs, cans) and produces powerful neurotoxin","Grows at typical refrigeration temperatures (5°C or below)","Completely inactivated by normal cooking"],
+    ans:1,
+    exp_ja:"ボツリヌス菌は嫌気性（酸素のない）環境で増殖し、非常に強力な神経毒素を産生します。真空パック・缶詰・自家製発酵食品などに注意が必要です。",
+    exp_en:"C. botulinum grows in anaerobic (oxygen-free) environments and produces a powerful neurotoxin. Vacuum-packed, canned, and home-fermented foods require special attention."
+  },
+  {
+    cat_ja:"保管・期限", cat_en:"Storage & Dates",
+    ja:"「賞味期限」と「消費期限」の違いで正しいのはどれですか？",
+    en:"Which correctly describes the difference between 'best before' and 'use by' dates?",
+    opts_ja:["両方とも期限を過ぎたら必ず廃棄すべき","賞味期限はおいしく食べられる期限、消費期限は安全に食べられる期限","消費期限が過ぎても少し食べられる","どちらも同じ意味である"],
+    opts_en:["Both must be discarded immediately after the date","Best before indicates optimal quality; use by indicates safety limit","Use by dates can be exceeded slightly","They mean the same thing"],
+    ans:1,
+    exp_ja:"賞味期限（ベストビフォア）は品質が良い期間の目安で、過ぎても安全な場合があります。消費期限（ユーズバイ）は安全性の期限で、過ぎたら廃棄が原則です。",
+    exp_en:"'Best before' refers to peak quality and the food may still be safe after this date. 'Use by' is a safety deadline — food should be discarded after this date."
+  },
+  {
+    cat_ja:"保管・期限", cat_en:"Storage & Dates",
+    ja:"先入れ先出し（FIFO）の原則とは何ですか？",
+    en:"What does the FIFO (First In, First Out) principle mean in food storage?",
+    opts_ja:["最初に製造された食品を最後に使う","先に入庫した食品を先に使用する","最も高価な食品から先に使う","冷蔵庫の前列の食品から先に使う"],
+    opts_en:["Use the first-manufactured items last","Use the first-received items first","Use the most expensive items first","Use items from the front of the refrigerator first"],
+    ans:1,
+    exp_ja:"FIFOは先に入庫・保管した食品を先に使用する原則です。これにより食品の期限切れや廃棄を防ぐことができます。",
+    exp_en:"FIFO means using the items that arrived first before newer stock. This prevents expiration and waste."
+  },
+  {
+    cat_ja:"異物混入", cat_en:"Foreign Objects",
+    ja:"食品製造現場で使用する青色の絆創膏の目的は何ですか？",
+    en:"Why are blue-colored bandages used in food manufacturing environments?",
+    opts_ja:["見た目がよいから","食品と色が違うため混入した際に発見しやすいから","青色は消毒効果があるから","法律で義務付けられているから"],
+    opts_en:["They look better","The blue color makes them easy to spot if they contaminate food","Blue has antiseptic properties","Required by law"],
+    ans:1,
+    exp_ja:"青色の絆創膏は食品にはない色のため、万が一食品に混入した場合に発見しやすくなります。金属探知機で検出できる素材のものもあります。",
+    exp_en:"Blue bandages contrast with most food colors, making them easy to detect if they end up in a product. Metal-detectable versions are also available."
+  },
+  {
+    cat_ja:"異物混入", cat_en:"Foreign Objects",
+    ja:"金属探知機を通過した製品に金属片が混入している可能性はありますか？",
+    en:"Is it possible for a product to contain metal fragments even after passing through a metal detector?",
+    opts_ja:["いいえ、金属探知機は100%検出できる","はい、検出限界以下の小さな金属片は通過する可能性がある","金属探知機は食品工場では義務ではない","金属探知機は磁性金属のみ検出できる"],
+    opts_en:["No, metal detectors are 100% accurate","Yes, metal pieces smaller than the detection limit can pass through","Metal detectors are not required in food factories","Metal detectors only detect magnetic metals"],
+    ans:1,
+    exp_ja:"金属探知機には検出限界（感度）があるため、非常に小さな金属片は検出されない場合があります。複数の管理手段を組み合わせることが重要です。",
+    exp_en:"Metal detectors have detection limits; extremely small fragments may pass through. Multiple control measures should be used together."
+  },
+  {
+    cat_ja:"HACCP", cat_en:"HACCP",
+    ja:"HACCPの「CCP（重要管理点）」とはどういう意味ですか？",
+    en:"What does 'CCP (Critical Control Point)' mean in HACCP?",
+    opts_ja:["製品の最終検査ポイント","ハザードを防止・除去・許容水準まで低減できる工程","製品の原価計算ポイント","製造ラインの品質確認ポイント"],
+    opts_en:["Final product inspection point","A step where a hazard can be prevented, eliminated, or reduced to acceptable levels","Product cost calculation point","Quality check point on the production line"],
+    ans:1,
+    exp_ja:"CCPは食品安全ハザードを制御できる重要な工程です。加熱・冷却・金属探知などがCCPの例として挙げられます。",
+    exp_en:"A CCP is a critical step in the process where food safety hazards can be controlled. Examples include cooking, chilling, and metal detection."
+  },
+  {
+    cat_ja:"HACCP", cat_en:"HACCP",
+    ja:"HACCPの7原則に含まれるものはどれですか？",
+    en:"Which of the following is included in the 7 HACCP principles?",
+    opts_ja:["利益の最大化","ハザード分析（危害要因分析）","従業員の採用基準","製品デザインの策定"],
+    opts_en:["Profit maximization","Hazard analysis","Employee hiring criteria","Product design planning"],
+    ans:1,
+    exp_ja:"HACCPの7原則の第1原則は「ハザード分析」です。生物的・化学的・物理的ハザードを特定し、評価します。",
+    exp_en:"The 1st of HACCP's 7 principles is 'Hazard Analysis' — identifying and evaluating biological, chemical, and physical hazards."
+  },
+  {
+    cat_ja:"アレルゲン", cat_en:"Allergens",
+    ja:"日本の食品表示法で特定原材料として表示が義務付けられている品目に含まれないものはどれですか？",
+    en:"Which of the following is NOT included in Japan's mandatory allergen labeling list (tokutei genzairyo)?",
+    opts_ja:["小麦","えび","とうもろこし","落花生（ピーナッツ）"],
+    opts_en:["Wheat","Shrimp","Corn","Peanuts"],
+    ans:2,
+    exp_ja:"とうもろこしは特定原材料（表示義務）には含まれません。義務表示は卵・乳・小麦・えび・かに・くるみ・落花生・そばの8品目です（2023年時点でくるみ追加）。",
+    exp_en:"Corn is not in Japan's mandatory allergen list. The 8 required items are: egg, milk, wheat, shrimp, crab, walnut, peanut, and buckwheat (as of 2023)."
+  },
+  {
+    cat_ja:"アレルゲン", cat_en:"Allergens",
+    ja:"食物アレルギー患者に対してアレルゲンを含む食品を誤って提供してしまった場合、最初にとるべき対応はどれですか？",
+    en:"What should be done first if a food allergen is accidentally served to a known allergy patient?",
+    opts_ja:["摂取量が少なければ様子を見る","直ちに患者の状態を確認し、症状があれば救急対応する","後で上司に報告するだけでよい","飲み物をたくさん飲んでもらう"],
+    opts_en:["Wait and observe if the amount was small","Immediately check the patient's condition and initiate emergency response if symptomatic","Just report to a supervisor later","Have the person drink plenty of fluids"],
+    ans:1,
+    exp_ja:"アレルギー反応は非常に急速に進行することがあります（アナフィラキシーショック）。直ちに状態を確認し、症状が現れたら迷わず救急要請してください。",
+    exp_en:"Allergic reactions can progress very rapidly (anaphylactic shock). Immediately assess the person's condition and call emergency services if any symptoms appear."
+  },
+  {
+    cat_ja:"虫害・鼠害", cat_en:"Pest Control",
+    ja:"食品工場への害虫・鼠の侵入を防ぐための対策として正しくないものはどれですか？",
+    en:"Which of the following is NOT a correct measure for preventing pest/rodent entry into a food factory?",
+    opts_ja:["扉や窓の隙間をふさぐ","定期的な清掃と食品残渣の除去","食品を床に直置きする","排水溝に蓋やネットを設置する"],
+    opts_en:["Seal gaps in doors and windows","Regular cleaning and removal of food scraps","Store food directly on the floor","Install covers/nets on drains"],
+    ans:2,
+    exp_ja:"食品を床に直置きすることは害虫・鼠の誘引源となります。食品はパレットや棚を使い、必ず床から離して保管してください。",
+    exp_en:"Storing food directly on the floor attracts pests and rodents. Always store food on pallets or shelves, off the ground."
+  },
+  {
+    cat_ja:"記録・文書", cat_en:"Records & Documentation",
+    ja:"食品の製造・流通における「トレーサビリティ」の目的はどれですか？",
+    en:"What is the purpose of 'traceability' in food manufacturing and distribution?",
+    opts_ja:["製品のコストを削減するため","問題発生時に食品の移動経路を追跡し、迅速な回収・原因特定を行うため","製品の味を改善するため","従業員の作業時間を管理するため"],
+    opts_en:["To reduce product costs","To track food movement for rapid recall and cause identification when problems arise","To improve product taste","To manage employee working hours"],
+    ans:1,
+    exp_ja:"トレーサビリティは食品安全上の問題が発生した際に、原材料から最終製品まで食品の経路を追跡し、迅速な回収・対応を可能にする仕組みです。",
+    exp_en:"Traceability enables tracking food from raw materials to final product, allowing rapid recalls and problem identification when food safety issues arise."
+  },
+  {
+    cat_ja:"記録・文書", cat_en:"Records & Documentation",
+    ja:"食品製造現場での温度記録の重要な目的はどれですか？",
+    en:"What is an important purpose of temperature records in food manufacturing?",
+    opts_ja:["エネルギーコストの削減","管理基準が守られていたことの証明と問題発生時の原因調査","製品の見た目の改善","従業員のモチベーション向上"],
+    opts_en:["Reducing energy costs","Proving compliance and investigating causes when problems arise","Improving product appearance","Boosting employee motivation"],
+    ans:1,
+    exp_ja:"温度記録は管理基準の遵守を証明する客観的な証拠となります。食中毒など問題発生時の原因特定にも不可欠です。",
+    exp_en:"Temperature records serve as objective evidence of compliance and are essential for identifying causes when food safety incidents occur."
+  },
+  {
+    cat_ja:"廃棄物管理", cat_en:"Waste Management",
+    ja:"食品工場での廃棄物管理について正しいのはどれですか？",
+    en:"Which is correct regarding waste management in a food factory?",
+    opts_ja:["廃棄物は製造エリアに長時間置いておいてよい","廃棄物は密閉容器に入れ、定期的に廃棄物置き場へ移動させる","廃棄物の容器に蓋は必要ない","廃棄物と食品原料は同じ場所に保管してよい"],
+    opts_en:["Waste can be left in the production area for long periods","Waste should be in sealed containers and moved regularly to waste areas","Waste containers don't need lids","Waste and food ingredients can be stored together"],
+    ans:1,
+    exp_ja:"廃棄物は密閉容器に入れ、害虫を誘引しないよう定期的に廃棄物置き場に移動させることが必要です。製造エリアへの長時間放置は汚染リスクがあります。",
+    exp_en:"Waste must be kept in sealed containers and moved regularly to waste areas to avoid attracting pests. Leaving waste in production areas for long periods creates contamination risks."
+  },
+  {
+    cat_ja:"水・氷の衛生", cat_en:"Water & Ice Safety",
+    ja:"食品製造に使用する水について正しいのはどれですか？",
+    en:"Which statement is correct about water used in food manufacturing?",
+    opts_ja:["地下水であれば水質検査なしに使用できる","飲料水適合（上水道水または水質基準を満たす水）を使用しなければならない","氷は衛生的なので水質は問われない","使用前に一度沸騰させれば水道水でなくてもよい"],
+    opts_en:["Groundwater can be used without quality testing","Only potable water (municipal supply or meeting water quality standards) may be used","Ice is inherently sanitary and water quality doesn't matter","Any water can be used if boiled before use"],
+    ans:1,
+    exp_ja:"食品製造には飲料水として適合した水（上水道水または同等の水質基準を満たす水）を使用しなければなりません。地下水等を使用する場合は定期的な水質検査が必要です。",
+    exp_en:"Only potable water (municipal supply or equivalent quality) may be used in food manufacturing. Regular water quality testing is required when using groundwater."
+  },
+  {
+    cat_ja:"食品表示", cat_en:"Food Labeling",
+    ja:"食品表示に関する次の説明のうち正しいのはどれですか？",
+    en:"Which of the following statements about food labeling is correct?",
+    opts_ja:["添加物は表示しなくてよい","原材料名は使用量の多い順に記載する","アレルゲンは目立たない小さな字で記載してよい","賞味期限は製造日から3ヶ月以内に設定しなければならない"],
+    opts_en:["Additives do not need to be listed","Ingredients must be listed in descending order by quantity","Allergens may be listed in very small, inconspicuous text","Best-before dates must be within 3 months of manufacture"],
+    ans:1,
+    exp_ja:"食品表示法により、原材料名は使用量の多い順に記載することが義務付けられています。",
+    exp_en:"Under food labeling law, ingredients must be listed in descending order by quantity used."
+  },
+  {
+    cat_ja:"洗浄・除菌", cat_en:"Cleaning & Disinfection",
+    ja:"アルコール消毒剤が食品現場で有効でない可能性が高い状況はどれですか？",
+    en:"In which situation is an alcohol disinfectant likely to be LESS effective in a food environment?",
+    opts_ja:["手指の消毒","清潔な器具の最終消毒","汚れが残っている表面の消毒","空気中のウイルス除去"],
+    opts_en:["Hand disinfection","Final sanitizing of clean utensils","Disinfecting surfaces with remaining soil","Removing viruses from the air"],
+    ans:2,
+    exp_ja:"アルコール消毒剤は有機物（汚れ・食品残渣など）が残っていると効果が著しく低下します。消毒前に必ず洗浄で汚れを落としてください。",
+    exp_en:"Alcohol disinfectants are significantly less effective when organic matter (soil, food residue) is present. Always clean surfaces before disinfecting."
+  },
+  {
+    cat_ja:"温度管理", cat_en:"Temperature",
+    ja:"調理済み食品を冷却保存する際の適切な方法はどれですか？",
+    en:"What is the correct method for cooling cooked food for storage?",
+    opts_ja:["熱いまま冷蔵庫に入れる","室温で数時間冷ましてから冷蔵庫に入れる","素早く（2時間以内に）21℃以下まで冷却し冷蔵する","翌日まで室温で放置してから冷蔵する"],
+    opts_en:["Place it hot directly into the refrigerator","Cool at room temperature for several hours before refrigerating","Rapidly cool to below 21°C within 2 hours, then refrigerate","Leave at room temperature until the next day before refrigerating"],
+    ans:2,
+    exp_ja:"調理済み食品は速やかに冷却することが重要です。2時間以内に21℃以下（さらに4時間以内に5℃以下）に冷却することで危険温度帯での細菌増殖を防げます。",
+    exp_en:"Cooked food must be cooled quickly. Cooling to below 21°C within 2 hours (then to 5°C within 4 more hours) prevents bacterial growth in the danger zone."
+  },
+  {
+    cat_ja:"食中毒", cat_en:"Food Poisoning",
+    ja:"カンピロバクターによる食中毒の主な原因食品はどれですか？",
+    en:"What is the main food source associated with Campylobacter food poisoning?",
+    opts_ja:["生野菜サラダ","不十分な加熱の鶏肉・生の鶏肉","缶詰食品","乳製品（チーズ・バター）"],
+    opts_en:["Raw vegetable salad","Undercooked or raw chicken","Canned food","Dairy products (cheese, butter)"],
+    ans:1,
+    exp_ja:"カンピロバクターは鶏の腸管に広く存在しており、不十分な加熱の鶏肉や鶏肉の取り扱いによる交差汚染が主な感染源です。",
+    exp_en:"Campylobacter is widely found in chicken intestines. The main sources of infection are undercooked chicken and cross-contamination during handling."
+  },
+];
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let lang = 'ja';
+let playerName = '';
+let questions = [];
+let currentQ = 0;
+let streak = 0;
+let prevScreen = 'screen-name';
+
+const T = {
+  ja: {
+    nameTitle: 'お名前を入力してください',
+    nameSub: 'クイズを始める前に氏名を入力してください。\n10問全問正解で達成者として登録されます。',
+    nameLabel: '氏名',
+    namePlaceholder: '例: 山田 太郎',
+    nameErr: '氏名を入力してください',
+    rule1: '10問連続正解でクリア！',
+    rule2: '1問でも間違えたらゲームオーバー',
+    rule3: '全問正解者は達成者として表示されます',
+    rule4: '問題は毎回ランダムに出題されます',
+    startBtn: 'スタート！',
+    correct: '✅ 正解！',
+    wrong: '❌ 不正解',
+    nextBtn: '次の問題へ →',
+    clearTitle: 'クリア達成！',
+    clearSub: (name) => `おめでとうございます、${name}さん！\n10問全問正解しました！達成者として登録されました。`,
+    clearStatLabel: '正解数',
+    overTitle: 'ゲームオーバー',
+    overSub: (name, q, streak) => `${name}さん、惜しかった！\n第${q}問で不正解。${streak}問連続正解でした。\nもう一度挑戦してみましょう！`,
+    overLabel: '連続正解数',
+    hofTitle: '🏅 達成者一覧',
+    hofSubtitle: '10問全問正解した方々',
+    hofEmpty: 'まだ達成者はいません。\nあなたが最初の挑戦者になりましょう！',
+    hofBtnTxt: '🏅 達成者一覧',
+    retryTxt: 'もう一度挑戦',
+    backBtn: '← 戻る',
+    badge: '全問正解',
+  },
+  en: {
+    nameTitle: 'Enter Your Name',
+    nameSub: 'Please enter your name before starting.\nThose who answer all 10 questions correctly will be listed as achievers.',
+    nameLabel: 'Full Name',
+    namePlaceholder: 'e.g. Taro Yamada',
+    nameErr: 'Please enter your name',
+    rule1: 'Answer 10 questions in a row to clear!',
+    rule2: 'One wrong answer = Game Over',
+    rule3: 'Perfect scorers are listed in the Hall of Fame',
+    rule4: 'Questions are randomized every time',
+    startBtn: 'Start!',
+    correct: '✅ Correct!',
+    wrong: '❌ Wrong',
+    nextBtn: 'Next Question →',
+    clearTitle: 'You Did It!',
+    clearSub: (name) => `Congratulations, ${name}!\nYou answered all 10 questions correctly!\nYou've been added to the Hall of Fame.`,
+    clearStatLabel: 'Correct Answers',
+    overTitle: 'Game Over',
+    overSub: (name, q, streak) => `${name}, so close!\nYou got question ${q} wrong after a ${streak}-question streak.\nTry again!`,
+    overLabel: 'Streak',
+    hofTitle: '🏅 Hall of Fame',
+    hofSubtitle: 'Perfect scorers – all 10 correct',
+    hofEmpty: 'No perfect scorers yet.\nBe the first to achieve it!',
+    hofBtnTxt: '🏅 Hall of Fame',
+    retryTxt: 'Try Again',
+    backBtn: '← Back',
+    badge: 'Perfect Score',
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  LANG
+// ═══════════════════════════════════════════════════════
+function setLang(l) {
+  lang = l;
+  document.getElementById('langSwitch').style.display = 'block';
+  applyLangUI();
+  showScreen('screen-name');
+}
+function switchLang() {
+  lang = (lang === 'ja') ? 'en' : 'ja';
+  applyLangUI();
+  // Re-render current screen text if on quiz
+  const qScreen = document.getElementById('screen-quiz');
+  if (qScreen.classList.contains('active') && questions.length > 0) {
+    renderQuestion();
+  }
+}
+function applyLangUI() {
+  const t = T[lang];
+  document.getElementById('nameTitle').textContent = t.nameTitle;
+  document.getElementById('nameSub').textContent = t.nameSub;
+  document.getElementById('nameLabel').textContent = t.nameLabel;
+  document.getElementById('nameInput').placeholder = t.namePlaceholder;
+  document.getElementById('rule1').textContent = t.rule1;
+  document.getElementById('rule2').textContent = t.rule2;
+  document.getElementById('rule3').textContent = t.rule3;
+  document.getElementById('rule4').textContent = t.rule4;
+  document.getElementById('startBtnTxt').textContent = t.startBtn;
+  document.getElementById('nextBtnTxt').textContent = t.nextBtn;
+  document.getElementById('hofBtnTxt').textContent = t.hofBtnTxt;
+  document.getElementById('hofBtnTxt2').textContent = t.hofBtnTxt;
+  document.getElementById('clearStatLabel').textContent = t.clearStatLabel;
+  document.getElementById('clearRetryTxt').textContent = t.retryTxt;
+  document.getElementById('overRetryTxt').textContent = t.retryTxt;
+  document.getElementById('backBtnTxt').textContent = t.backBtn;
+  document.getElementById('overLabel').textContent = t.overLabel;
+  document.getElementById('hofTitle').textContent = t.hofTitle;
+  document.getElementById('hofSubtitle').textContent = t.hofSubtitle;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCREEN
+// ═══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAME SCREEN
+// ═══════════════════════════════════════════════════════
+document.getElementById('nameInput').addEventListener('input', function() {
+  const val = this.value.trim();
+  document.getElementById('startBtn').disabled = val.length === 0;
+  document.getElementById('nameErr').textContent = '';
+});
+
+// ═══════════════════════════════════════════════════════
+//  QUIZ LOGIC
+// ═══════════════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  const nameVal = document.getElementById('nameInput').value.trim();
+  if (!nameVal) {
+    document.getElementById('nameErr').textContent = T[lang].nameErr;
+    return;
+  }
+  playerName = nameVal;
+  // Pick 10 random questions
+  questions = shuffle(QUESTION_BANK).slice(0, 10);
+  // Randomize option order per question
+  questions = questions.map(q => {
+    const opts_ja = [...q.opts_ja];
+    const opts_en = [...q.opts_en];
+    const order = shuffle([0,1,2,3]);
+    const correctOptJa = opts_ja[q.ans];
+    const correctOptEn = opts_en[q.ans];
+    return {
+      ...q,
+      opts_ja: order.map(i => opts_ja[i]),
+      opts_en: order.map(i => opts_en[i]),
+      ans: order.indexOf(q.ans)
+    };
+  });
+  currentQ = 0;
+  streak = 0;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const t = T[lang];
+  document.getElementById('qNum').textContent = currentQ + 1;
+  document.getElementById('qCategory').textContent = lang === 'ja' ? q.cat_ja : q.cat_en;
+  document.getElementById('qText').textContent = lang === 'ja' ? q.ja : q.en;
+  document.getElementById('qTextSub').textContent = '';
+  document.getElementById('streakFill').style.width = (currentQ / 10 * 100) + '%';
+  document.getElementById('heartsDisplay').textContent = '❤️';
+  document.getElementById('feedbackBox').style.display = 'none';
+
+  const opts = lang === 'ja' ? q.opts_ja : q.opts_en;
+  const wrap = document.getElementById('optionsWrap');
+  wrap.innerHTML = '';
+  opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => answer(i);
+    wrap.appendChild(btn);
+  });
+}
+
+function answer(idx) {
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedbackBox');
+  const fbLabel = document.getElementById('fbLabel');
+  const fbText = document.getElementById('fbText');
+  const t = T[lang];
+
+  if (idx === q.ans) {
+    btns[idx].classList.add('correct');
+    fbLabel.className = 'fb-label ok';
+    fbLabel.textContent = t.correct;
+    fbText.textContent = lang === 'ja' ? q.exp_ja : q.exp_en;
+    fb.className = 'feedback-box fb-correct';
+    fb.style.display = 'block';
+    streak++;
+
+    if (currentQ === 9) {
+      // CLEAR
+      document.getElementById('nextBtnTxt').textContent = lang === 'ja' ? '結果を見る →' : 'See Results →';
+      document.getElementById('nextBtn').onclick = () => showClear();
+    } else {
+      document.getElementById('nextBtnTxt').textContent = t.nextBtn;
+      document.getElementById('nextBtn').onclick = () => nextQuestion();
+    }
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    fbLabel.className = 'fb-label ng';
+    fbLabel.textContent = t.wrong;
+    fbText.textContent = lang === 'ja' ? q.exp_ja : q.exp_en;
+    fb.className = 'feedback-box fb-wrong';
+    fb.style.display = 'block';
+    document.getElementById('heartsDisplay').textContent = '🖤';
+    document.querySelector('.q-card').classList.add('shake');
+    setTimeout(() => document.querySelector('.q-card').classList.remove('shake'), 500);
+    document.getElementById('nextBtnTxt').textContent = lang === 'ja' ? '結果へ →' : 'See Result →';
+    document.getElementById('nextBtn').onclick = () => showGameOver();
+  }
+}
+
+function nextQuestion() {
+  currentQ++;
+  renderQuestion();
+}
+
+function showClear() {
+  const t = T[lang];
+  document.getElementById('clearTitle').textContent = t.clearTitle;
+  document.getElementById('clearSub').textContent = t.clearSub(playerName).replace('\n', '\n');
+  document.getElementById('streakFill').style.width = '100%';
+  // Save to HoF
+  saveHof(playerName);
+  showScreen('screen-clear');
+  launchConfetti();
+  prevScreen = 'screen-clear';
+}
+
+function showGameOver() {
+  const t = T[lang];
+  document.getElementById('overTitle').textContent = t.overTitle;
+  document.getElementById('overSub').textContent = t.overSub(playerName, currentQ + 1, streak);
+  document.getElementById('overNum').textContent = streak;
+  showScreen('screen-gameover');
+  prevScreen = 'screen-gameover';
+}
+
+// ═══════════════════════════════════════════════════════
+//  HALL OF FAME
+// ═══════════════════════════════════════════════════════
+const HOF_KEY = 'food_hygiene_hof_v2';
+
+function saveHof(name) {
+  const list = getHof();
+  const entry = { name, date: new Date().toLocaleDateString('ja-JP') };
+  // 同じ名前がすでに存在する場合は追加しない（日付をまたいでも重複しない）
+  const exists = list.some(e => e.name === name);
+  if (!exists) {
+    list.push(entry);
+    try {
+      localStorage.setItem(HOF_KEY, JSON.stringify(list));
+    } catch(e) {
+      console.warn('localStorage write failed:', e);
+    }
+  }
+}
+
+function getHof() {
+  try {
+    const raw = localStorage.getItem(HOF_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function goHof() {
+  const t = T[lang];
+  const list = getHof();
+  const container = document.getElementById('hofList');
+  container.innerHTML = '';
+  if (list.length === 0) {
+    container.innerHTML = `<div class="hof-empty">${t.hofEmpty}</div>`;
+  } else {
+    [...list].forEach((e, i) => {
+      const rank = i + 1;
+      const div = document.createElement('div');
+      div.className = 'hof-item';
+      div.style.animationDelay = (i * 0.05) + 's';
+      const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
+      const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+      div.innerHTML = `
+        <div class="hof-rank ${rankClass}">${rankIcon}</div>
+        <div class="hof-name">${e.name}</div>
+        <div class="hof-date">${e.date}</div>
+        <div class="hof-badge">${t.badge}</div>
+      `;
+      container.appendChild(div);
+    });
+  }
+  showScreen('screen-hof');
+}
+
+function backFromHof() {
+  showScreen(prevScreen);
+}
+
+// ═══════════════════════════════════════════════════════
+//  RESTART
+// ═══════════════════════════════════════════════════════
+function restartQuiz() {
+  document.getElementById('nameInput').value = '';
+  document.getElementById('startBtn').disabled = true;
+  prevScreen = 'screen-name';
+  showScreen('screen-name');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONFETTI
+// ═══════════════════════════════════════════════════════
+function launchConfetti() {
+  const wrap = document.getElementById('confettiWrap');
+  wrap.innerHTML = '';
+  const colors = ['#00d4aa','#ffd700','#ff6b35','#ff3d5a','#a8edea','#ffffff','#00ffcc'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.width = (8 + Math.random() * 8) + 'px';
+    p.style.height = (8 + Math.random() * 8) + 'px';
+    p.style.animationDuration = (2 + Math.random() * 2) + 's';
+    p.style.animationDelay = (Math.random() * 0.8) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    wrap.appendChild(p);
+  }
+}
+</script>
+</body>
+</html>
