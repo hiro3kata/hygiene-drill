@@ -167,13 +167,40 @@
   .err-msg { color: var(--danger); font-size: 0.8rem; margin-top: 8px; min-height: 18px; }
 </style>
 </head>
+<style>
+  .pw-icon { font-size: 3rem; margin-bottom: 16px; }
+  .pw-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 6px; text-align: center; }
+  .pw-sub { color: var(--sub); font-size: 0.85rem; text-align: center; margin-bottom: 28px; line-height: 1.6; }
+  .pw-err { color: var(--danger); font-size: 0.82rem; margin-top: 8px; min-height: 20px; text-align: center; }
+  .pw-input-wrap { position: relative; width: 100%; }
+  .pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--sub); font-size: 1.1rem; padding: 4px; }
+</style>
+
 <body>
+
+<!-- ── SCREEN: PASSWORD ── -->
+<div class="screen active" id="screen-pw">
+  <div class="card" style="max-width:380px">
+    <div style="text-align:center">
+      <div class="pw-icon">🔐</div>
+      <div class="pw-title">食品衛生クイズ<br><span style="font-size:0.6em;font-weight:400;color:var(--sub)">Food Hygiene Quiz</span></div>
+      <div class="pw-sub">パスワードを入力してください<br><span style="font-size:0.9em">Enter the password to continue</span></div>
+    </div>
+    <div class="field-label">PASSWORD</div>
+    <div class="pw-input-wrap">
+      <input class="field-input" type="password" id="pwInput" maxlength="30" autocomplete="off" placeholder="パスワード / Password" onkeydown="if(event.key==='Enter')checkPw()">
+      <button class="pw-toggle" onclick="togglePwVisible()" tabindex="-1">👁</button>
+    </div>
+    <div class="pw-err" id="pwErr"></div>
+    <button class="btn-primary" onclick="checkPw()" style="margin-top:16px">入室する / Enter</button>
+  </div>
+</div>
 
 <!-- Lang switch button (visible after lang selected) -->
 <button class="lang-switch" id="langSwitch" style="display:none" onclick="switchLang()">🌐 EN / JP</button>
 
 <!-- ── SCREEN: LANGUAGE SELECT ── -->
-<div class="screen active" id="screen-lang">
+<div class="screen" id="screen-lang">
   <div style="text-align:center; margin-bottom:32px;">
     <div style="font-size:2.2rem; margin-bottom:8px;">🍱</div>
     <div class="lang-title">食品衛生クイズ<br><span style="font-size:0.6em; font-weight:400; color:var(--sub)">Food Hygiene Quiz</span></div>
@@ -277,6 +304,28 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════
+//  PASSWORD
+// ═══════════════════════════════════════════════════════
+const CORRECT_PW = 'hyginen';
+
+function checkPw() {
+  const val = document.getElementById('pwInput').value;
+  const err = document.getElementById('pwErr');
+  if (val === CORRECT_PW) {
+    showScreen('screen-lang');
+  } else {
+    err.textContent = '❌ パスワードが違います / Incorrect password';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function togglePwVisible() {
+  const input = document.getElementById('pwInput');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
 // ═══════════════════════════════════════════════════════
 //  QUESTION BANK  — 40 questions, JP + EN bilingual
 // ═══════════════════════════════════════════════════════
@@ -941,27 +990,17 @@ const HOF_KEY = 'food_hygiene_hof_v2';
 function saveHof(name) {
   const list = getHof();
   const entry = { name, date: new Date().toLocaleDateString('ja-JP') };
-  // 同じ名前がすでに存在する場合は追加しない（日付をまたいでも重複しない）
-  const exists = list.some(e => e.name === name);
+  // Avoid duplicate name on same day
+  const exists = list.some(e => e.name === name && e.date === entry.date);
   if (!exists) {
     list.push(entry);
-    try {
-      localStorage.setItem(HOF_KEY, JSON.stringify(list));
-    } catch(e) {
-      console.warn('localStorage write failed:', e);
-    }
+    localStorage.setItem(HOF_KEY, JSON.stringify(list));
   }
 }
 
 function getHof() {
-  try {
-    const raw = localStorage.getItem(HOF_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch(e) {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(HOF_KEY)) || []; }
+  catch { return []; }
 }
 
 function goHof() {
@@ -972,7 +1011,7 @@ function goHof() {
   if (list.length === 0) {
     container.innerHTML = `<div class="hof-empty">${t.hofEmpty}</div>`;
   } else {
-    [...list].forEach((e, i) => {
+    [...list].reverse().forEach((e, i) => {
       const rank = i + 1;
       const div = document.createElement('div');
       div.className = 'hof-item';
