@@ -123,7 +123,6 @@
   .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
   /* ── HALL OF FAME ── */
-  #screen-hof { padding: 24px 16px 40px; }
   .hof-header { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 540px; margin-bottom: 24px; }
   .hof-title { font-size: 1.4rem; font-weight: 900; }
   .hof-sub { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
@@ -165,33 +164,32 @@
   .hof-btn-wrap { margin-top: 16px; }
 
   .err-msg { color: var(--danger); font-size: 0.8rem; margin-top: 8px; min-height: 18px; }
-</style>
-</head>
-<style>
-  .pw-icon { font-size: 3rem; margin-bottom: 16px; }
-  .pw-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 6px; text-align: center; }
-  .pw-sub { color: var(--sub); font-size: 0.85rem; text-align: center; margin-bottom: 28px; line-height: 1.6; }
-  .pw-err { color: var(--danger); font-size: 0.82rem; margin-top: 8px; min-height: 20px; text-align: center; }
+
+  /* ── PASSWORD SCREEN ── */
   .pw-input-wrap { position: relative; width: 100%; }
   .pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--sub); font-size: 1.1rem; padding: 4px; }
 </style>
-
+</head>
 <body>
 
 <!-- ── SCREEN: PASSWORD ── -->
 <div class="screen active" id="screen-pw">
   <div class="card" style="max-width:380px">
-    <div style="text-align:center">
-      <div class="pw-icon">🔐</div>
-      <div class="pw-title">食品衛生クイズ<br><span style="font-size:0.6em;font-weight:400;color:var(--sub)">Food Hygiene Quiz</span></div>
-      <div class="pw-sub">パスワードを入力してください<br><span style="font-size:0.9em">Enter the password to continue</span></div>
+    <div style="text-align:center; margin-bottom:20px">
+      <div style="font-size:3rem; margin-bottom:12px">🔐</div>
+      <div style="font-size:1.4rem; font-weight:900; margin-bottom:6px">食品衛生クイズ</div>
+      <div style="font-size:0.85rem; color:var(--sub)">Food Hygiene Quiz</div>
+    </div>
+    <div style="font-size:0.85rem; color:var(--sub); text-align:center; margin-bottom:20px; line-height:1.6">
+      パスワードを入力してください<br><span style="font-size:0.9em">Enter the password to continue</span>
     </div>
     <div class="field-label">PASSWORD</div>
     <div class="pw-input-wrap">
-      <input class="field-input" type="password" id="pwInput" maxlength="30" autocomplete="off" placeholder="パスワード / Password" onkeydown="if(event.key==='Enter')checkPw()">
+      <input class="field-input" type="password" id="pwInput" maxlength="30" autocomplete="off"
+        placeholder="パスワード / Password" onkeydown="if(event.key==='Enter')checkPw()">
       <button class="pw-toggle" onclick="togglePwVisible()" tabindex="-1">👁</button>
     </div>
-    <div class="pw-err" id="pwErr"></div>
+    <div class="err-msg" id="pwErr"></div>
     <button class="btn-primary" onclick="checkPw()" style="margin-top:16px">入室する / Enter</button>
   </div>
 </div>
@@ -231,7 +229,7 @@
     <div class="rules-box" id="rulesBox">
       <div class="rules-item"><span class="rules-icon">✅</span><span id="rule1">10問連続正解でクリア！</span></div>
       <div class="rules-item"><span class="rules-icon">❌</span><span id="rule2">1問でも間違えたらゲームオーバー</span></div>
-      <div class="rules-item"><span class="rules-icon">🏆</span><span id="rule3">全問正解者は達成者として表示されます</span></div>
+      <div class="rules-item"><span class="rules-icon">🏆</span><span id="rule3">10問全問正解を目指そう！</span></div>
       <div class="rules-item"><span class="rules-icon">🔀</span><span id="rule4">問題は毎回ランダムに出題されます</span></div>
     </div>
     <button class="btn-primary" id="startBtn" onclick="startQuiz()" disabled>
@@ -271,8 +269,7 @@
     <div class="label" id="clearStatLabel">正解数</div>
   </div>
   <div class="btn-row">
-    <button class="btn-secondary" onclick="goHof()"><span id="hofBtnTxt">🏅 達成者一覧</span></button>
-    <button class="btn-primary" style="max-width:180px" onclick="restartQuiz()"><span id="clearRetryTxt">もう一度挑戦</span></button>
+    <button class="btn-primary" style="max-width:220px" onclick="restartQuiz()"><span id="clearRetryTxt">もう一度挑戦</span></button>
   </div>
 </div>
 
@@ -286,16 +283,10 @@
     <div class="label" id="overLabel">連続正解数</div>
   </div>
   <div class="btn-row">
-    <button class="btn-secondary" onclick="goHof()"><span id="hofBtnTxt2">🏅 達成者一覧</span></button>
-    <button class="btn-primary" style="max-width:180px" onclick="restartQuiz()"><span id="overRetryTxt">もう一度挑戦</span></button>
+    <button class="btn-primary" style="max-width:220px" onclick="restartQuiz()"><span id="overRetryTxt">もう一度挑戦</span></button>
   </div>
 </div>
 
-<!-- ── SCREEN: HALL OF FAME ── -->
-<div class="screen" id="screen-hof" style="justify-content:flex-start; padding-top:40px">
-  <div class="hof-header">
-    <div>
-      <div class="hof-title" id="hofTitle">🏅 達成者一覧</div>
       <div class="hof-sub" id="hofSubtitle">10問全問正解した方々</div>
     </div>
     <button class="btn-secondary" onclick="backFromHof()" style="padding:10px 18px; font-size:0.85rem"><span id="backBtnTxt">← 戻る</span></button>
@@ -304,6 +295,7 @@
 </div>
 
 <script>
+
 // ═══════════════════════════════════════════════════════
 //  PASSWORD
 // ═══════════════════════════════════════════════════════
@@ -735,59 +727,47 @@ let prevScreen = 'screen-name';
 const T = {
   ja: {
     nameTitle: 'お名前を入力してください',
-    nameSub: 'クイズを始める前に氏名を入力してください。\n10問全問正解で達成者として登録されます。',
+    nameSub: 'クイズを始める前に氏名を入力してください。\n10問全問正解を目指しましょう！',
     nameLabel: '氏名',
     namePlaceholder: '例: 山田 太郎',
     nameErr: '氏名を入力してください',
     rule1: '10問連続正解でクリア！',
     rule2: '1問でも間違えたらゲームオーバー',
-    rule3: '全問正解者は達成者として表示されます',
+    rule3: '10問全問正解を目指そう！',
     rule4: '問題は毎回ランダムに出題されます',
     startBtn: 'スタート！',
     correct: '✅ 正解！',
     wrong: '❌ 不正解',
     nextBtn: '次の問題へ →',
     clearTitle: 'クリア達成！',
-    clearSub: (name) => `おめでとうございます、${name}さん！\n10問全問正解しました！達成者として登録されました。`,
+    clearSub: (name) => `おめでとうございます、${name}さん！\n10問全問正解達成です！素晴らしい！`,
     clearStatLabel: '正解数',
     overTitle: 'ゲームオーバー',
     overSub: (name, q, streak) => `${name}さん、惜しかった！\n第${q}問で不正解。${streak}問連続正解でした。\nもう一度挑戦してみましょう！`,
     overLabel: '連続正解数',
-    hofTitle: '🏅 達成者一覧',
-    hofSubtitle: '10問全問正解した方々',
-    hofEmpty: 'まだ達成者はいません。\nあなたが最初の挑戦者になりましょう！',
-    hofBtnTxt: '🏅 達成者一覧',
     retryTxt: 'もう一度挑戦',
-    backBtn: '← 戻る',
-    badge: '全問正解',
   },
   en: {
     nameTitle: 'Enter Your Name',
-    nameSub: 'Please enter your name before starting.\nThose who answer all 10 questions correctly will be listed as achievers.',
+    nameSub: 'Please enter your name before starting.\nAim for a perfect score of 10/10!',
     nameLabel: 'Full Name',
     namePlaceholder: 'e.g. Taro Yamada',
     nameErr: 'Please enter your name',
     rule1: 'Answer 10 questions in a row to clear!',
     rule2: 'One wrong answer = Game Over',
-    rule3: 'Perfect scorers are listed in the Hall of Fame',
+    rule3: 'Aim for all 10 correct answers!',
     rule4: 'Questions are randomized every time',
     startBtn: 'Start!',
     correct: '✅ Correct!',
     wrong: '❌ Wrong',
     nextBtn: 'Next Question →',
     clearTitle: 'You Did It!',
-    clearSub: (name) => `Congratulations, ${name}!\nYou answered all 10 questions correctly!\nYou've been added to the Hall of Fame.`,
+    clearSub: (name) => `Congratulations, ${name}!\nYou answered all 10 questions correctly!\nExcellent work!`,
     clearStatLabel: 'Correct Answers',
     overTitle: 'Game Over',
     overSub: (name, q, streak) => `${name}, so close!\nYou got question ${q} wrong after a ${streak}-question streak.\nTry again!`,
     overLabel: 'Streak',
-    hofTitle: '🏅 Hall of Fame',
-    hofSubtitle: 'Perfect scorers – all 10 correct',
-    hofEmpty: 'No perfect scorers yet.\nBe the first to achieve it!',
-    hofBtnTxt: '🏅 Hall of Fame',
     retryTxt: 'Try Again',
-    backBtn: '← Back',
-    badge: 'Perfect Score',
   }
 };
 
@@ -821,8 +801,6 @@ function applyLangUI() {
   document.getElementById('rule4').textContent = t.rule4;
   document.getElementById('startBtnTxt').textContent = t.startBtn;
   document.getElementById('nextBtnTxt').textContent = t.nextBtn;
-  document.getElementById('hofBtnTxt').textContent = t.hofBtnTxt;
-  document.getElementById('hofBtnTxt2').textContent = t.hofBtnTxt;
   document.getElementById('clearStatLabel').textContent = t.clearStatLabel;
   document.getElementById('clearRetryTxt').textContent = t.retryTxt;
   document.getElementById('overRetryTxt').textContent = t.retryTxt;
@@ -966,8 +944,6 @@ function showClear() {
   document.getElementById('clearTitle').textContent = t.clearTitle;
   document.getElementById('clearSub').textContent = t.clearSub(playerName).replace('\n', '\n');
   document.getElementById('streakFill').style.width = '100%';
-  // Save to HoF
-  saveHof(playerName);
   showScreen('screen-clear');
   launchConfetti();
   prevScreen = 'screen-clear';
@@ -985,54 +961,6 @@ function showGameOver() {
 // ═══════════════════════════════════════════════════════
 //  HALL OF FAME
 // ═══════════════════════════════════════════════════════
-const HOF_KEY = 'food_hygiene_hof_v2';
-
-function saveHof(name) {
-  const list = getHof();
-  const entry = { name, date: new Date().toLocaleDateString('ja-JP') };
-  // Avoid duplicate name on same day
-  const exists = list.some(e => e.name === name && e.date === entry.date);
-  if (!exists) {
-    list.push(entry);
-    localStorage.setItem(HOF_KEY, JSON.stringify(list));
-  }
-}
-
-function getHof() {
-  try { return JSON.parse(localStorage.getItem(HOF_KEY)) || []; }
-  catch { return []; }
-}
-
-function goHof() {
-  const t = T[lang];
-  const list = getHof();
-  const container = document.getElementById('hofList');
-  container.innerHTML = '';
-  if (list.length === 0) {
-    container.innerHTML = `<div class="hof-empty">${t.hofEmpty}</div>`;
-  } else {
-    [...list].reverse().forEach((e, i) => {
-      const rank = i + 1;
-      const div = document.createElement('div');
-      div.className = 'hof-item';
-      div.style.animationDelay = (i * 0.05) + 's';
-      const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
-      const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-      div.innerHTML = `
-        <div class="hof-rank ${rankClass}">${rankIcon}</div>
-        <div class="hof-name">${e.name}</div>
-        <div class="hof-date">${e.date}</div>
-        <div class="hof-badge">${t.badge}</div>
-      `;
-      container.appendChild(div);
-    });
-  }
-  showScreen('screen-hof');
-}
-
-function backFromHof() {
-  showScreen(prevScreen);
-}
 
 // ═══════════════════════════════════════════════════════
 //  RESTART
